@@ -1,0 +1,57 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// client doing the project for 
+model ClientAccount {
+  id        String    @id @unique @default(cuid())
+  name      String    @db.VarChar(40)
+  email     String?
+  phone     String?
+  company   String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  Projects  Project[]
+
+  @@map("accounts")
+}
+
+model Project {
+  id          String        @id @unique @default(cuid()) @db.VarChar(30)
+  accountId   String        @db.VarChar(30)
+  clientName  String
+  projectName String        @db.VarChar(120)
+  account     ClientAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  description String?
+  status      String //ongoning , complete, hold 
+  priority    String
+  hours       Float?
+  startsOn    DateTime?     @db.Date
+  endDate     DateTime?     @db.Date
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  tasks       Task[]
+
+  @@map("Projects")
+}
+
+model Task {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  status      String // Enum: "Not Started" | "In Progress" | "Completed"
+  dueDate     DateTime?
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   String
+}
